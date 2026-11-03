@@ -1,4 +1,5 @@
-// UI-only example geography. Coordinates and polylines are illustrative and not authoritative rail alignments.
+// UI-only station sample and corridor planning metadata. Station coordinates need verification.
+// Corridor polylines below are deprecated placeholders and MUST NOT be displayed or used for routing.
 export const stations = [
   {id:'ipswich',name:'Ipswich',coordinates:[1.1447,52.0506],hub:true},
   {id:'needham',name:'Needham Market',coordinates:[1.0550,52.1535]},
