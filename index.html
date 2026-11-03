@@ -12,20 +12,20 @@
 <body>
   <div class="app">
     <header class="topbar">
-      <div class="brand"><div class="brand-logo" aria-hidden="true">╋</div><div><div class="brand-title">Railway Manager</div><div class="brand-subtitle">UI PROTOTYPE · v0.1</div></div></div>
+      <div class="brand"><div class="brand-logo" aria-hidden="true">╋</div><div><div class="brand-title">Railway Manager</div><div class="brand-subtitle">UI PROTOTYPE · v0.2</div></div></div>
       <button type="button" class="icon-button" id="info-button" aria-label="About this prototype">ⓘ</button>
     </header>
     <main class="main">
       <section class="screen screen-map is-active" id="screen-map" aria-label="Map screen">
-        <div id="map" role="application" aria-label="Interactive map of example East Anglian railway corridors"></div>
+        <div id="map" role="application" aria-label="Interactive map of mapped British railway alignments"></div>
         <div class="map-top-controls">
           <label class="search-wrap"><span aria-hidden="true">⌕</span><input id="station-search" type="search" placeholder="Find a station" autocomplete="off" aria-label="Find a station" /></label>
           <div id="search-results" class="search-results" hidden></div>
           <div class="layer-switch" aria-label="Map layer"><button class="layer-button is-selected" type="button" data-layer="coverage">Coverage</button><button class="layer-button" type="button" data-layer="opportunity">Opportunity</button></div>
         </div>
         <button class="home-map-button" id="reset-view" type="button" aria-label="Return to Ipswich">⌖ <span>Ipswich</span></button>
-        <div class="map-note"><strong>Example geography</strong><span>3 hand-defined corridors · railway shapes approximate</span></div>
-        <div class="legend"><span class="legend-line"></span><span>Example railway, not purchased</span><span class="legend-hub">◆</span><span>Owned hub</span></div>
+        <div class="map-note"><strong>Railway map preview</strong><span>OSM-derived track shapes · routing graph not built</span></div>
+        <div class="legend"><span class="legend-line"></span><span>Mapped rail, not purchased</span><span class="legend-hub">◆</span><span>Owned hub</span></div>
       </section>
       <section class="screen screen-list" id="screen-routes" aria-label="Routes screen"><div class="page-heading"><div class="eyebrow">OPERATIONS</div><h1>Routes</h1><p>Plan and manage your services.</p></div><div class="empty-card"><span class="empty-icon">⇄</span><h2>No routes created</h2><p>Route creation will come when the railway access and gameplay rules are ready.</p><span class="tag">Not implemented</span></div></section>
       <section class="screen screen-list" id="screen-fleet" aria-label="Fleet screen"><div class="page-heading"><div class="eyebrow">ROLLING STOCK</div><h1>Fleet</h1><p>Your trains and pending orders.</p></div><div class="empty-card"><span class="empty-icon">▰</span><h2>No trains yet</h2><p>Your starting company has no trains. The catalogue and ordering workflow will be introduced later.</p><span class="tag">Not implemented</span></div></section>
