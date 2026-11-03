@@ -1,0 +1,42 @@
+{
+  "version": "0.5b",
+  "source": "NaPTAN RLY + archived Network Rail VectorLinks",
+  "station_input_sha256": "c39ae82dd2430e6dcee6f0577547d16c28e9c69284c227d0d314fe3143b1f186",
+  "track_input_sha256": "e89a04b4e20f35905b2538f38353849cf36c79a7aff0646421e0b36ff238c3a7",
+  "candidate_station_count": 175,
+  "track_segments_checked": 83472,
+  "match_status_counts": {
+    "candidate": 168,
+    "caution": 7
+  },
+  "median_nearest_track_distance_m": 7.5,
+  "maximum_nearest_track_distance_m": 72.0,
+  "needs_review": [],
+  "potential_duplicate_groups": [
+    {
+      "name": "watford junction rail station",
+      "locality": "watford",
+      "atcoCodes": [
+        "9100WATFDJ",
+        "9100WATFJDC"
+      ],
+      "action": "manual review before combining; preserve separate source records"
+    }
+  ],
+  "starter_atco_mapping": {
+    "ipswich": "9100IPSWICH",
+    "needham": "9100NEEDHAM",
+    "stowmarket": "9100STWMRKT",
+    "diss": "9100DISS",
+    "norwich": "9100NRCH",
+    "manningtree": "9100MANNGTR",
+    "colchester": "9100CLCHSTR",
+    "derbyroad": "9100DERBYRD",
+    "woodbridge": "9100WODBDGE",
+    "melton": "9100MELTON",
+    "saxmundham": "9100SXMNDHM",
+    "wickham": "9100WCKHMMR"
+  },
+  "starter_missing": [],
+  "warning": "Visual snapping only. Nearest track may be a siding, separate track, or historical alignment. No platform, service, or topological connection is confirmed."
+}
