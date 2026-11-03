@@ -1,0 +1,33 @@
+name: Match East Anglia stations to track
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  match:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Network Rail importer requirements
+        run: python -m pip install --disable-pip-version-check pyshp==2.3.1 pyproj==3.7.2
+      - name: Generate NaPTAN East Anglia station candidates
+        run: python tools/import_stations.py --scope east
+      - name: Generate Network Rail East Anglia geometry candidates
+        run: python tools/import_network_rail.py --scope east
+      - name: Match station display markers to track
+        run: |
+          python tools/match_stations_to_track.py \
+            --stations data/derived/naptan-rail-east.json \
+            --tracks data/derived/network-rail-east.geojson
+      - name: Upload match candidates and quality report
+        uses: actions/upload-artifact@v4
+        with:
+          name: railway-manager-east-station-matches
+          path: |
+            data/derived/stations-east-matched-candidate.geojson
+            data/derived/stations-east-matching-report.json
+          retention-days: 14
