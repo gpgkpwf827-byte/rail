@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {stations,corridors} from '../data/network.js';
+import {candidateLinks,getCandidateNeighbours,validateCandidateNetwork} from '../data/graph.js';
+const report=validateCandidateNetwork();
+assert.equal(report.valid,true,report.errors.join('\n'));
+assert.equal(report.stationCount,12);
+assert.equal(report.linkCount,11);
+assert.equal(report.corridorCount,3);
+assert.equal(getCandidateNeighbours('ipswich').length,3);
+assert.equal(getCandidateNeighbours('diss').length,2);
+assert.equal(validateCandidateNetwork(stations,[...candidateLinks,candidateLinks[0]],corridors).valid,false);
+assert.equal(validateCandidateNetwork(stations,[...candidateLinks,{id:'x--y',from:'x',to:'y',corridorId:'east-suffolk'}],corridors).valid,false);
+console.log('Candidate graph structural tests passed:',report);
