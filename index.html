@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f9faf8" />
+  <meta name="description" content="Railway Manager — early user interface prototype" />
+  <title>Railway Manager — UI Prototype</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css" />
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><div class="brand-logo" aria-hidden="true">╋</div><div><div class="brand-title">Railway Manager</div><div class="brand-subtitle">UI PROTOTYPE · v0.1</div></div></div>
+      <button type="button" class="icon-button" id="info-button" aria-label="About this prototype">ⓘ</button>
+    </header>
+    <main class="main">
+      <section class="screen screen-map is-active" id="screen-map" aria-label="Map screen">
+        <div id="map" role="application" aria-label="Interactive map of example East Anglian railway corridors"></div>
+        <div class="map-top-controls">
+          <label class="search-wrap"><span aria-hidden="true">⌕</span><input id="station-search" type="search" placeholder="Find a station" autocomplete="off" aria-label="Find a station" /></label>
+          <div id="search-results" class="search-results" hidden></div>
+          <div class="layer-switch" aria-label="Map layer"><button class="layer-button is-selected" type="button" data-layer="coverage">Coverage</button><button class="layer-button" type="button" data-layer="opportunity">Opportunity</button></div>
+        </div>
+        <button class="home-map-button" id="reset-view" type="button" aria-label="Return to Ipswich">⌖ <span>Ipswich</span></button>
+        <div class="map-note"><strong>Example geography</strong><span>3 hand-defined corridors · railway shapes approximate</span></div>
+        <div class="legend"><span class="legend-line"></span><span>Example railway, not purchased</span><span class="legend-hub">◆</span><span>Owned hub</span></div>
+      </section>
+      <section class="screen screen-list" id="screen-routes" aria-label="Routes screen"><div class="page-heading"><div class="eyebrow">OPERATIONS</div><h1>Routes</h1><p>Plan and manage your services.</p></div><div class="empty-card"><span class="empty-icon">⇄</span><h2>No routes created</h2><p>Route creation will come when the railway access and gameplay rules are ready.</p><span class="tag">Not implemented</span></div></section>
+      <section class="screen screen-list" id="screen-fleet" aria-label="Fleet screen"><div class="page-heading"><div class="eyebrow">ROLLING STOCK</div><h1>Fleet</h1><p>Your trains and pending orders.</p></div><div class="empty-card"><span class="empty-icon">▰</span><h2>No trains yet</h2><p>Your starting company has no trains. The catalogue and ordering workflow will be introduced later.</p><span class="tag">Not implemented</span></div></section>
+      <section class="screen screen-list" id="screen-hubs" aria-label="Hubs screen"><div class="page-heading"><div class="eyebrow">YOUR NETWORK</div><h1>Hubs</h1><p>Stations where you can base and maintain trains.</p></div><button type="button" id="ipswich-hub-card" class="hub-card"><span class="hub-symbol">◆</span><span class="hub-copy"><strong>Ipswich</strong><small>Starting hub · 1 maintenance bay</small><small>0 trains based · 0 waiting</small></span><span class="hub-chevron">›</span></button></section>
+      <section class="screen screen-list" id="screen-more" aria-label="More screen"><div class="page-heading"><div class="eyebrow">MANAGEMENT</div><h1>More</h1><p>Company information and future settings.</p></div><div class="menu-card"><div><strong>Company overview</strong><small>Economics not yet implemented</small></div><span>›</span></div><div class="menu-card"><div><strong>Reports & analytics</strong><small>Coming in a later milestone</small></div><span>›</span></div><div class="menu-card"><div><strong>Settings & save data</strong><small>Coming in a later milestone</small></div><span>›</span></div><div class="notice">This prototype does not store a game, simulate trains, purchase access, or calculate demand or finances.</div></section>
+    </main>
+    <nav class="tabbar" aria-label="Main navigation">
+      <button type="button" class="tab is-active" data-tab="map" aria-current="page"><span class="tab-icon" aria-hidden="true">◈</span><span>Map</span></button>
+      <button type="button" class="tab" data-tab="routes"><span class="tab-icon" aria-hidden="true">⇄</span><span>Routes</span></button>
+      <button type="button" class="tab" data-tab="fleet"><span class="tab-icon" aria-hidden="true">▰</span><span>Fleet</span></button>
+      <button type="button" class="tab" data-tab="hubs"><span class="tab-icon" aria-hidden="true">◆</span><span>Hubs</span></button>
+      <button type="button" class="tab" data-tab="more"><span class="tab-icon" aria-hidden="true">☷</span><span>More</span></button>
+    </nav>
+    <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+    <aside class="bottom-sheet" id="detail-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+      <div class="sheet-handle" aria-hidden="true"></div><div class="sheet-header"><div><span class="eyebrow" id="sheet-type">STATION</span><h2 id="sheet-title"></h2></div><button type="button" id="close-sheet" class="icon-button" aria-label="Close details">×</button></div><div id="sheet-content" class="sheet-content"></div>
+    </aside>
+  </div>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
