@@ -1,0 +1,33 @@
+name: Prepare NaPTAN railway stations
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: Candidate stations to export
+        required: true
+        default: east
+        type: choice
+        options:
+          - east
+          - national
+permissions:
+  contents: read
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Import railway station access areas
+        run: python tools/import_stations.py --scope "${{ inputs.scope }}"
+      - name: Upload candidate dataset and quality report
+        uses: actions/upload-artifact@v4
+        with:
+          name: naptan-rail-${{ inputs.scope }}-candidate
+          path: |
+            data/derived/naptan-rail-${{ inputs.scope }}.json
+            data/derived/naptan-rail-${{ inputs.scope }}-report.json
+          retention-days: 14
