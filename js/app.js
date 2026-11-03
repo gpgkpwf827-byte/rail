@@ -89,7 +89,7 @@ async function loadNetworkRailOverlay(){
     const data=await response.json();
     if(data.type!=='FeatureCollection'||!Array.isArray(data.features)||data.features.length===0)return;
     map.addSource('network-rail-archive',{type:'geojson',data});
-    map.addLayer({id:'network-rail-geometry',type:'line',source:'network-rail-archive',minzoom:8,paint:{'line-color':'#586b76','line-width':['interpolate',['linear'],['zoom'],8,0.7,12,1.8,16,2.8],'line-opacity':0.9}});
+    map.addLayer({id:'network-rail-geometry',type:'line',source:'network-rail-archive',paint:{'line-color':'#586b76','line-width':['interpolate',['linear'],['zoom'],4,0.4,8,0.8,12,1.8,16,2.8],'line-opacity':0.9}});
     // Use archived rail geometry in place of the background-tiles overlay, preserving station markers above it.
     for(const id of ['mapped-rail-halo','mapped-rail-lines','mapped-rail-hit'])if(map.getLayer(id))map.setLayoutProperty(id,'visibility','none');
     map.on('click','network-rail-geometry',e=>openSheet('ARCHIVED NETWORK RAIL TRACK','Mapped track geometry',
