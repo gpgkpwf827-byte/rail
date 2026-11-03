@@ -1,10 +1,13 @@
 import * as maplibregl from 'https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs';
 import {stations, stationsGeoJSON} from '../data/network.js';
 import {getCandidateNeighbours, validateCandidateNetwork} from '../data/graph.js';
+import {mergeStationCatalogues, toStationGeoJSON} from './station-display.js';
 
 const $ = selector => document.querySelector(selector);
 const all = selector => [...document.querySelectorAll(selector)];
 const start = [1.1447,52.0506];
+let mapStations = stations;
+let mapStationsById = new Map(stations.map(st => [st.id, st]));
 let map;
 let selectedLayer = 'coverage';
 let currentTab = 'map';
@@ -32,11 +35,20 @@ $('#close-sheet').addEventListener('click',closeSheet);
 $('#sheet-backdrop').addEventListener('click',closeSheet);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet();});
 function openStation(station){
+  if (station.imported) {
+    openSheet('RAILWAY STATION · CANDIDATE', station.name,
+      '<p class="sheet-caption">Imported from NaPTAN and provisionally aligned to archived Network Rail geometry. This is a visual match only; track access and train routing are not verified.</p>' +
+      `<div class="sheet-row"><span>ATCO code</span><strong>${escapeHTML(station.atcoCode)}</strong></div>` +
+      `<div class="sheet-row"><span>Match distance</span><strong>${station.distanceMetres.toFixed(1)} m</strong></div>` +
+      `<div class="sheet-row"><span>Review status</span><strong>${station.matchStatus === 'caution' ? 'Check match' : 'Provisional'}</strong></div>` +
+      '<div class="sheet-row"><span>Operational routes</span><strong>Not implemented</strong></div>');
+    return;
+  }
   const hub=Boolean(station.hub);
   const neighbours=getCandidateNeighbours(station.id);
   const nearbyNames=neighbours.map(n=>stations.find(s=>s.id===n.stationId)?.name||n.stationId);
   openSheet(hub?'OWNED HUB':'RAILWAY STATION',station.name,
-   `<p class="sheet-caption">${hub?'Your starting operational hub. This is the only owned asset shown.':'A station in our starter geography dataset.'} Station points are provisional; the visible railway lines use OpenStreetMap-derived vector tiles.</p>`+
+   `<p class="sheet-caption">${hub?'Your starting operational hub. This is the only owned asset shown.':'A station in our starter geography dataset.'} Station points are provisional; the imported railway geometry uses archived Network Rail data when available.</p>`+
    `<div class="sheet-row"><span>Current status</span><strong>${hub?'Owned hub':'Ordinary station'}</strong></div>`+
    (hub?'<div class="sheet-row"><span>Maintenance bays</span><strong>1</strong></div><div class="sheet-row"><span>Based trains</span><strong>0</strong></div>':'')+
    '<div class="sheet-row"><span>Services</span><strong>None</strong></div>'+
@@ -57,7 +69,7 @@ function openRailAlignment(properties={}){
   );
 }
 $('#ipswich-hub-card').addEventListener('click',()=>{switchTab('map'); const st=stations.find(s=>s.id==='ipswich');map?.flyTo({center:st.coordinates,zoom:11});openStation(st);});
-$('#info-button').addEventListener('click',()=>openSheet('ABOUT','UI prototype v0.4','<p>This is an interface prototype only. The routes, purchases, passenger demand, financial data, fleet and simulation have not been implemented.</p><p>Visible rail alignments use OpenStreetMap-derived vector tiles. A separate schematic candidate network is now defined and validated structurally, but is NOT a real routing graph. Station positions remain provisional. Data layer selections do not show demand coverage or opportunity yet.</p>'));
+$('#info-button').addEventListener('click',()=>openSheet('ABOUT','UI prototype v0.5c','<p>This is an interface prototype only. The routes, purchases, passenger demand, financial data, fleet and simulation have not been implemented.</p><p>Rail alignments use imported archived Network Rail geometry when available, with OpenStreetMap-derived vector tiles as fallback. Imported stations are visual candidates only. A separate schematic candidate network is now defined and validated structurally, but is NOT a real routing graph. Station positions remain provisional. Data layer selections do not show demand coverage or opportunity yet.</p>'));
 $('#reset-view').addEventListener('click',()=>map?.flyTo({center:start,zoom:12.5,duration:700}));
 
 function selectLayer(layer){
@@ -72,13 +84,13 @@ const search=$('#station-search'), results=$('#search-results');
 search.addEventListener('input',()=>{
   const q=search.value.trim().toLowerCase();
   if(!q){results.hidden=true;results.replaceChildren();return;}
-  const matches=stations.filter(s=>s.name.toLowerCase().includes(q)).slice(0,8);
+  const matches=mapStations.filter(s=>s.name.toLowerCase().includes(q)).slice(0,8);
   results.replaceChildren();
   matches.forEach(st=>{const button=document.createElement('button');button.type='button';button.className='search-result';button.textContent=st.name;button.addEventListener('click',()=>goToStation(st));results.append(button);});
   if(!matches.length){const p=document.createElement('div');p.className='search-result';p.textContent='No matching station in the example dataset';results.append(p);}
   results.hidden=false;
 });
-search.addEventListener('keydown',event=>{if(event.key==='Enter'){const match=stations.find(s=>s.name.toLowerCase().includes(search.value.trim().toLowerCase()));if(match)goToStation(match);}});
+search.addEventListener('keydown',event=>{if(event.key==='Enter'){const match=mapStations.find(s=>s.name.toLowerCase().includes(search.value.trim().toLowerCase()));if(match)goToStation(match);}});
 function goToStation(st){switchTab('map');search.value=st.name;results.hidden=true;map?.flyTo({center:st.coordinates,zoom:12,duration:750});openStation(st);search.blur();}
 
 async function loadNetworkRailOverlay(){
@@ -99,6 +111,23 @@ async function loadNetworkRailOverlay(){
     const note=document.querySelector('.map-note');
     if(note){note.querySelector('strong').textContent='Network Rail archived geography';note.querySelector('span').textContent=`${data.features.length.toLocaleString()} track features · not validated for routing`;}
   }catch(e){console.info('Archived railway extract not installed; using existing map tiles',e);}
+}
+async function loadExpandedStations(){
+  // This file is generated offline and committed explicitly after validation.
+  // Missing/invalid data never breaks the original 12-station map.
+  try {
+    const response = await fetch('./data/derived/stations-east-matched-candidate.geojson', {cache:'no-store'});
+    if (!response.ok) return;
+    const collection = await response.json();
+    const merged = mergeStationCatalogues(stations, collection);
+    if (merged.added === 0) return;
+    mapStations = merged.stations;
+    mapStationsById = new Map(mapStations.map(st => [st.id, st]));
+    map.getSource('example-stations').setData(toStationGeoJSON(mapStations));
+    console.info(`Loaded ${merged.added} additional candidate stations; ${merged.skippedStarter} starter matches and ${merged.skippedDuplicate} duplicate access areas were not plotted.`);
+    const note = document.querySelector('.map-note span');
+    if (note) note.textContent = `${mapStations.length} distinct station markers · routing unverified`;
+  } catch (error) { console.warn('Expanded stations unavailable; keeping original markers', error); }
 }
 const graphCheck=validateCandidateNetwork();
 if(!graphCheck.valid) console.error('Candidate graph validation errors:',graphCheck.errors);
@@ -129,14 +158,14 @@ try{
       console.warn('Active map style does not expose a transportation vector layer. Railway overlay unavailable.');
       document.querySelector('.map-note span').textContent='Railway vector layer unavailable · check map style';
     }
-    map.addLayer({id:'station-dots',type:'circle',source:'example-stations',filter:['!=',['get','hub'],true],paint:{'circle-radius':['interpolate',['linear'],['zoom'],7,3,11,5,14,7],'circle-color':'#ffffff','circle-stroke-color':'#6c7e78','circle-stroke-width':2}});
-    map.addLayer({id:'station-labels',type:'symbol',source:'example-stations',minzoom:9,layout:{'text-field':['get','name'],'text-size':11,'text-offset':[0,1.25],'text-anchor':'top','text-allow-overlap':false},paint:{'text-color':'#2b4840','text-halo-color':'#fff','text-halo-width':1.8}});
+    map.addLayer({id:'station-dots',type:'circle',source:'example-stations',minzoom:8,filter:['!=',['get','hub'],true],paint:{'circle-radius':['interpolate',['linear'],['zoom'],8,2.6,11,4.3,14,6.5],'circle-color':'#ffffff','circle-stroke-color':'#6c7e78','circle-stroke-width':2}});
+    map.addLayer({id:'station-labels',type:'symbol',source:'example-stations',minzoom:10,layout:{'text-field':['get','name'],'text-size':['interpolate',['linear'],['zoom'],10,10,13,12],'text-offset':[0,1.25],'text-anchor':'top','text-allow-overlap':false,'text-optional':true},paint:{'text-color':'#2b4840','text-halo-color':'#fff','text-halo-width':1.8}});
     map.addLayer({id:'hub-circle',type:'circle',source:'example-stations',filter:['==',['get','hub'],true],paint:{'circle-radius':11,'circle-color':'#08745e','circle-stroke-width':3,'circle-stroke-color':'#fff'}});
     map.addLayer({id:'hub-symbol',type:'symbol',source:'example-stations',filter:['==',['get','hub'],true],layout:{'text-field':'◆','text-size':13,'text-allow-overlap':true},paint:{'text-color':'#ffffff'}});
-    map.on('click','hub-circle',e=>{const st=stations.find(s=>s.id===e.features?.[0]?.properties?.id);if(st)openStation(st);});
-    map.on('click','station-dots',e=>{const st=stations.find(s=>s.id===e.features?.[0]?.properties?.id);if(st)openStation(st);});
+    map.on('click','hub-circle',e=>{const st=mapStationsById.get(e.features?.[0]?.properties?.id);if(st)openStation(st);});
+    map.on('click','station-dots',e=>{const st=mapStationsById.get(e.features?.[0]?.properties?.id);if(st)openStation(st);});
     ['hub-circle','station-dots'].forEach(id=>{map.on('mouseenter',id,()=>map.getCanvas().style.cursor='pointer');map.on('mouseleave',id,()=>map.getCanvas().style.cursor='');});
-    loadNetworkRailOverlay().then(()=>{for(const id of ['station-dots','station-labels','hub-circle','hub-symbol'])if(map.getLayer(id))map.moveLayer(id);});
+    Promise.allSettled([loadNetworkRailOverlay(), loadExpandedStations()]).then(()=>{for(const id of ['station-dots','station-labels','hub-circle','hub-symbol'])if(map.getLayer(id))map.moveLayer(id);});
   });
   map.on('error',error=>{console.warn('Map resource error',error.error);});
 }catch(error){console.error(error);$('#map').innerHTML='<p style="padding:30px;">Unable to start the interactive map. Check your internet connection and that your browser supports WebGL.</p>';}
